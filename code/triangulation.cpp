@@ -326,41 +326,41 @@ inline void splitSingleEdge(const TriangleSoup &ts, FastTrimesh &subm, uint v0_i
     subm.removeEdge(static_cast<uint>(e_id));
 }
 
-inline void splitSingleEdge(const TriangleSoup &ts, FastTrimesh &subm, uint v0_id, uint v1_id, auxvector<uint> &points)
-{
-    if(points.empty()) return;
+// inline void splitSingleEdge(const TriangleSoup &ts, FastTrimesh &subm, uint v0_id, uint v1_id, auxvector<uint> &points)
+// {
+//     if(points.empty()) return;
 
-    int e_id = subm.edgeID(v0_id, v1_id);
-    assert(e_id >= 0);
+//     int e_id = subm.edgeID(v0_id, v1_id);
+//     assert(e_id >= 0);
 
-    // new_vertices in mesh
-    for(uint p_pos = 1; p_pos < points.size()-1; p_pos++)
-    {
-        uint p_id = points[p_pos];
-        uint v_pos = subm.addVert(ts.vert(p_id), p_id);
-        points[p_pos] = v_pos;
-    }
+//     // new_vertices in mesh
+//     for(uint p_pos = 1; p_pos < points.size()-1; p_pos++)
+//     {
+//         uint p_id = points[p_pos];
+//         uint v_pos = subm.addVert(ts.vert(p_id), p_id);
+//         points[p_pos] = v_pos;
+//     }
 
-    points[0] = v0_id;
-    points[points.size() - 1] = v1_id;
+//     points[0] = v0_id;
+//     points[points.size() - 1] = v1_id;
 
-    // make new_triangles
-    for(auto i = points.begin(), j = i+1; j < points.end(); ++i, ++j)
-    {
-        for(uint t_id : subm.adjE2T(static_cast<uint>(e_id)))
-        {
-            uint opp = subm.triVertOppositeTo(t_id, v0_id, v1_id);
+//     // make new_triangles
+//     for(auto i = points.begin(), j = i+1; j < points.end(); ++i, ++j)
+//     {
+//         for(uint t_id : subm.adjE2T(static_cast<uint>(e_id)))
+//         {
+//             uint opp = subm.triVertOppositeTo(t_id, v0_id, v1_id);
 
-            if(subm.triVertsAreCCW(t_id, v0_id, v1_id))
-                subm.addTri(*j, *i, opp);
-            else
-                subm.addTri(*i, *j, opp);
-        }
-    }
+//             if(subm.triVertsAreCCW(t_id, v0_id, v1_id))
+//                 subm.addTri(*j, *i, opp);
+//             else
+//                 subm.addTri(*i, *j, opp);
+//         }
+//     }
 
-    // remove the original edge and the tris attached to it
-    subm.removeEdge(static_cast<uint>(e_id));
-}
+//     // remove the original edge and the tris attached to it
+//     subm.removeEdge(static_cast<uint>(e_id));
+// }
 
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
