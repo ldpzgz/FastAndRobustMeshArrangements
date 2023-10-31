@@ -49,7 +49,7 @@
 
 #include <absl/container/inlined_vector.h>
 template<typename T>
-using fmvector = absl::InlinedVector<T, 16>;
+using fmvector = std::vector<T>;
 
 struct iVtx
 {
@@ -194,7 +194,7 @@ class FastTrimesh
         inline void removeTri(uint t_id);
 
         inline void removeTris(const std::vector<uint> &t_ids);
-        inline void removeTris(const fmvector<uint> &t_ids);
+        //inline void removeTris(const fmvector<uint> &t_ids);
 
         inline void splitEdge(const uint  &e_id, uint v_id);
 
