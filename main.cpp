@@ -44,12 +44,12 @@
 
 #include "solve_intersections.h"
 #include "io_functions.h"
-
+#include "meshArrangement.h"
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 int main(int argc, char **argv)
 {
-    std::string filename;
+    /*std::string filename;
 
     if(argc > 1)
         filename = argv[1];
@@ -57,24 +57,51 @@ int main(int argc, char **argv)
     {
         std::cout << "input file missing" << std::endl;
         return -1;
-    }
-
-    std::vector<double> in_coords, out_coords;
-    std::vector<uint> in_tris, out_tris;
+    }*/
+    //solveIntersection
+    std::vector<double> in_coords{0,0,0,
+        2,0,0,
+        1,2,0,
+        1,0.3,-0.5,
+        1.1,0.3,1,
+        0.9,0.3,1
+    };
+    std::vector<double> out_coords;
+    std::vector<uint> in_tris{0,1,2,3,4,5};
+    std::vector<std::bitset<32>> in_labels{0x01,0x02};
+    std::vector<uint> out_tris;
+    std::vector<std::bitset<32>> out_labels;
     std::vector<genericPoint*> gen_points;
     point_arena arena;
 
-    load(filename, in_coords, in_tris);
+    std::cout<<"solve start\n";
+    solveIntersectTriangles(in_coords,in_tris,in_labels,out_coords,out_tris,out_labels);
+    std::cout<<"solve end\n";
+    std::cout<<out_tris.size()<<","<<out_coords.size()<<","<<out_labels.size()<<std::endl;
+    for (int i = 0; i < out_tris.size() / 3; ++i) {
+        std::cout<<"p1:"<<out_coords[3*out_tris[i * 3]]<<","
+            <<out_coords[3*out_tris[i * 3]+1]<<","
+            <<out_coords[3*out_tris[i * 3]+2]<<std::endl;
+        std::cout<<"p2:"<<out_coords[3*out_tris[i * 3+1]]<<","
+            <<out_coords[3*out_tris[i * 3+1]+1]<<","
+            <<out_coords[3*out_tris[i * 3+1]+2]<<std::endl;
+        std::cout<<"p3:"<<out_coords[3*out_tris[i * 3+2]]<<","
+            <<out_coords[3*out_tris[i * 3+2]+1]<<","
+            <<out_coords[3*out_tris[i * 3+2]+2]<<std::endl;
+        std::cout<<"label:"<<out_labels[i] << std::endl;
+    }
+    return 0;
+    //load(filename, in_coords, in_tris);
 
-    /*-------------------------------------------------------------------
-     * There are 4 versions of the solveIntersections function. Please
-     * refer to the solve_intersections.h file to see how to use them. */
+    ///*-------------------------------------------------------------------
+    // * There are 4 versions of the solveIntersections function. Please
+    // * refer to the solve_intersections.h file to see how to use them. */
 
-    solveIntersections(in_coords, in_tris, arena, gen_points, out_tris);
+    //solveIntersections(in_coords, in_tris, arena, gen_points, out_tris);
 
-    computeApproximateCoordinates(gen_points, out_coords);
-    
-    save("output.obj", out_coords, out_tris);
+    //computeApproximateCoordinates(gen_points, out_coords);
+    //
+    //save("output.obj", out_coords, out_tris);
 
     return 0;
 }
