@@ -86,7 +86,7 @@ endif()
 
 if(CINOLIB_USES_INDIRECT_PREDICATES)
     message("CINOLIB OPTIONAL MODULE: Indirect Predicates")
-    FetchContent_Declare(indirect_predicates GIT_REPOSITORY "https://github.com/cinolib-dev-team/Indirect_Predicates.git")
+    FetchContent_Declare(indirect_predicates GIT_REPOSITORY "https://github.com/ldpzgz/Indirect_Predicates.git")
     FetchContent_MakeAvailable(indirect_predicates)
     target_link_libraries(cinolib INTERFACE indirectPredicates)
     target_compile_definitions(cinolib INTERFACE CINOLIB_USES_INDIRECT_PREDICATES)
