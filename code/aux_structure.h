@@ -53,7 +53,7 @@ typedef std::pair<uint, uint> UIPair;
 
 #include <absl/container/inlined_vector.h>
 template<typename T>
-using auxvector = absl::InlinedVector<T, 16>;
+using auxvector = std::vector<T>;
 
 #include "../external/parallel-hashmap/parallel_hashmap/btree.h"
 
