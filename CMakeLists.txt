@@ -13,7 +13,7 @@ set(TBB_EXAMPLES OFF CACHE BOOL " " FORCE)
 add_subdirectory(external/oneTBB)
 
 set( CMAKE_BUILD_TYPE Release)
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -fPIC"
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -fPIC" )
 
 add_library(meshArrangement SHARED meshArrangement.cpp)
 
