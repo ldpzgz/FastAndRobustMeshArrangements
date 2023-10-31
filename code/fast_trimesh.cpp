@@ -694,12 +694,12 @@ inline void FastTrimesh::removeTris(const std::vector<uint> &t_ids)
     for(uint &t_id : tmp_t_ids) removeTri(t_id);
 }
 
-inline void FastTrimesh::removeTris(const fmvector<uint> &t_ids)
-{
-    fmvector<uint> tmp_t_ids = t_ids;
-    std::sort(tmp_t_ids.rbegin(), tmp_t_ids.rend());
-    for(uint &t_id : tmp_t_ids) removeTri(t_id);
-}
+// inline void FastTrimesh::removeTris(const fmvector<uint> &t_ids)
+// {
+//     fmvector<uint> tmp_t_ids = t_ids;
+//     std::sort(tmp_t_ids.rbegin(), tmp_t_ids.rend());
+//     for(uint &t_id : tmp_t_ids) removeTri(t_id);
+// }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
