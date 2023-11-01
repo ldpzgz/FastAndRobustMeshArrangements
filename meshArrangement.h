@@ -5,7 +5,7 @@
 /*
 * 三角化有相交的三角形
 */
-void solveIntersectTriangles(std::vector<double>& in_coords,
+bool solveIntersectTriangles(std::vector<double>& in_coords,
     std::vector<unsigned int>& in_tris,
     std::vector<double>& out_coords,
     std::vector<unsigned int>& out_tris);
@@ -13,7 +13,7 @@ void solveIntersectTriangles(std::vector<double>& in_coords,
 * 三角化有相交的三角形，label标记三角形属于哪个mesh，
 * out_labels标记输出的三角形属于哪个mesh
 */
-void solveIntersectTriangles(std::vector<double>& in_coords,
+bool solveIntersectTriangles(std::vector<double>& in_coords,
     std::vector<unsigned int>& in_tris,
     std::vector< std::bitset<32>>& in_labels,
     std::vector<double>& out_coords,
