@@ -49,9 +49,9 @@
 
 int main(int argc, char **argv)
 {
-    /*std::string filename;
+    std::string filename = "crash.obj";
 
-    if(argc > 1)
+    /*if(argc > 1)
         filename = argv[1];
     else
     {
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         return -1;
     }*/
     //solveIntersection
-    std::vector<double> in_coords{0,0,0,
+    /*std::vector<double> in_coords{0,0,0,
         2,0,0,
         1,2,0,
         1,0.3,-0.5,
@@ -90,19 +90,28 @@ int main(int argc, char **argv)
             <<out_coords[3*out_tris[i * 3+2]+2]<<std::endl;
         std::cout<<"label:"<<out_labels[i] << std::endl;
     }
-    return 0;
-    //load(filename, in_coords, in_tris);
+    return 0;*/
+    std::vector<double> out_coords;
+    std::vector<uint> in_tris;
+    std::vector<uint> out_tris;
+    point_arena arena;
+    std::vector<double> in_coords;
+    std::vector<genericPoint*> gen_points;
 
-    ///*-------------------------------------------------------------------
-    // * There are 4 versions of the solveIntersections function. Please
-    // * refer to the solve_intersections.h file to see how to use them. */
+    load(filename, in_coords, in_tris);
 
-    //solveIntersections(in_coords, in_tris, arena, gen_points, out_tris);
-
-    //computeApproximateCoordinates(gen_points, out_coords);
-    //
-    //save("output.obj", out_coords, out_tris);
-
+    /*-------------------------------------------------------------------
+     * There are 4 versions of the solveIntersections function. Please
+     * refer to the solve_intersections.h file to see how to use them. */
+    bool b = solveIntersectTriangles(in_coords, in_tris,out_coords,out_tris);
+    if (b) {
+        std::cout<<"success to solve intersect triangles\n";
+        save("output.obj", out_coords, out_tris);
+    }
+    else {
+        std::cout<<"failed to solve intersect triangles\n";
+    }
+    
     return 0;
 }
 
