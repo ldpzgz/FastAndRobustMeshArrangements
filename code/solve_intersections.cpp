@@ -37,7 +37,7 @@
 
 #include "solve_intersections.h"
 
-inline void meshArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector< std::bitset<NBIT> > &in_labels, point_arena &arena,
+inline bool meshArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector< std::bitset<NBIT> > &in_labels, point_arena &arena,
                                     std::vector<genericPoint*> &vertices, std::vector<uint> &out_tris, std::vector< std::bitset<NBIT> > &out_labels)
 {
     initFPU();
@@ -61,9 +61,10 @@ inline void meshArrangementPipeline(const std::vector<double> &in_coords, const 
 
     classifyIntersections(ts, arena, g);
 
-    triangulation(ts, arena, g, out_tris, out_labels);
+    bool b = triangulation(ts, arena, g, out_tris, out_labels);
 
     ts.appendJollyPoints();
+    return b;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
