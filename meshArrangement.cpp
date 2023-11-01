@@ -48,19 +48,21 @@
 #define EXPORT_INTERFACE
 #endif
 
-void EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,std::vector<uint>& in_tris,std::vector<double>& out_coords,std::vector<uint>& out_tris){
+bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,std::vector<uint>& in_tris,std::vector<double>& out_coords,std::vector<uint>& out_tris){
     point_arena arena;
     std::vector<genericPoint*> vertices;
     std::vector< std::bitset<NBIT>> tmp_in_labels(in_tris.size() / 3), out_labels;
 
-    meshArrangementPipeline(in_coords, in_tris, tmp_in_labels, arena, vertices, out_tris, out_labels);
-
+    boo b = meshArrangementPipeline(in_coords, in_tris, tmp_in_labels, arena, vertices, out_tris, out_labels);
+    if(!b){
+        return b;
+    }
     computeApproximateCoordinates(vertices, out_coords);
     //freePointsMemory(vertices);
-    return;
+    return b;
 }
 
-void EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
+bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
     std::vector<uint>& in_tris,
     std::vector< std::bitset<32>>& in_labels,
     std::vector<double>& out_coords,
@@ -70,10 +72,12 @@ void EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
     point_arena arena;
     std::vector<genericPoint*> vertices;
 
-    meshArrangementPipeline(in_coords, in_tris, in_labels, arena, vertices, out_tris, out_labels);
-
+    boo b = meshArrangementPipeline(in_coords, in_tris, in_labels, arena, vertices, out_tris, out_labels);
+    if(!b){
+        return b;
+    }
     computeApproximateCoordinates(vertices, out_coords);
     //freePointsMemory(vertices);
-    return;
+    return b;
 }
 
