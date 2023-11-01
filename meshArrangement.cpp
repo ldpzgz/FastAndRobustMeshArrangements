@@ -53,7 +53,7 @@ bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,std
     std::vector<genericPoint*> vertices;
     std::vector< std::bitset<NBIT>> tmp_in_labels(in_tris.size() / 3), out_labels;
 
-    boo b = meshArrangementPipeline(in_coords, in_tris, tmp_in_labels, arena, vertices, out_tris, out_labels);
+    bool b = meshArrangementPipeline(in_coords, in_tris, tmp_in_labels, arena, vertices, out_tris, out_labels);
     if(!b){
         return b;
     }
@@ -72,7 +72,7 @@ bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
     point_arena arena;
     std::vector<genericPoint*> vertices;
 
-    boo b = meshArrangementPipeline(in_coords, in_tris, in_labels, arena, vertices, out_tris, out_labels);
+    bool b = meshArrangementPipeline(in_coords, in_tris, in_labels, arena, vertices, out_tris, out_labels);
     if(!b){
         return b;
     }
