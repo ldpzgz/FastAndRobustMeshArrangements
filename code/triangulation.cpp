@@ -495,7 +495,7 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
     }
 
     if(intersected_edges.empty()){
-        throw std::exception("error in function findIntersectingElements");
+        throw std::exception();
     }
 
     // walk along the topology to find the sorted list of edges and tris that intersect {v_start, v_stop}
