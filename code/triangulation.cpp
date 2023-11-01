@@ -47,7 +47,7 @@
 #include "utils.h"
 
 #include <tbb/tbb.h>
-
+#include <exception>
 inline void triangulateSingleTriangle(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint t_id, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector< std::bitset<NBIT> > &new_labels, tbb::spin_mutex& mutex)
 {
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -125,7 +125,7 @@ inline void triangulateSingleTriangle(TriangleSoup &ts, point_arena& arena, Fast
     }
 }
 
-inline void triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector< std::bitset<NBIT> > &new_labels)
+inline bool triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector< std::bitset<NBIT> > &new_labels)
 {
     new_labels.clear();
     new_tris.clear();
@@ -150,17 +150,22 @@ inline void triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructu
     }
 
     // processing the triangles to split
-    tbb::spin_mutex mutex;
-    tbb::parallel_for((uint)0, (uint)tris_to_split.size(), [&](uint t) {
-        uint t_id = tris_to_split[t];
-        FastTrimesh subm(ts.triVert(t_id, 0),
-                         ts.triVert(t_id, 1),
-                         ts.triVert(t_id, 2),
-                         ts.tri(t_id),
-                         ts.triPlane(t_id));
+    try{
+        tbb::spin_mutex mutex;
+        tbb::parallel_for((uint)0, (uint)tris_to_split.size(), [&](uint t) {
+            uint t_id = tris_to_split[t];
+            FastTrimesh subm(ts.triVert(t_id, 0),
+                            ts.triVert(t_id, 1),
+                            ts.triVert(t_id, 2),
+                            ts.tri(t_id),
+                            ts.triPlane(t_id));
 
-        triangulateSingleTriangle(ts, arena, subm, t_id, g, new_tris, new_labels, mutex);
-    });
+            triangulateSingleTriangle(ts, arena, subm, t_id, g, new_tris, new_labels, mutex);
+        });
+    }catch(std::exception e){
+        return false;
+    }
+    return true;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -489,7 +494,9 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
         }
     }
 
-    assert(intersected_edges.size() > 0);
+    if(intersected_edges.empty()){
+        throw std::exception("error in function findIntersectingElements");
+    }
 
     // walk along the topology to find the sorted list of edges and tris that intersect {v_start, v_stop}
     while(true)
