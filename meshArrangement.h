@@ -34,3 +34,5 @@ void setAnotherSolver(std::function<bool(std::vector<double>&,
 void booleanPipeline(const std::vector<double> &in_coords, const std::vector<unsigned int> &in_tris,
                             const std::vector<unsigned int> &in_labels, const BoolOp &op, std::vector<double> &bool_coords,
                             std::vector<unsigned int> &bool_tris, std::vector< std::bitset<NBIT> > &bool_labels);
+
+void writeObj(const std::string& fn,const std::vector<double> &in_coords, const std::vector<unsigned int> &in_tris);

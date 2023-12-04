@@ -41,6 +41,7 @@
 #define _HAS_STD_BYTE 0
 
 #include "solve_intersections.h"
+#include <cinolib/write_OBJ.h>
 
 #ifdef WIN32
 #define EXPORT_INTERFACE __declspec(dllexport)
@@ -83,6 +84,18 @@ bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
     computeApproximateCoordinates(vertices, out_coords);
     //freePointsMemory(vertices);
     return b;
+}
+
+void writeObj(const std::string& fn,const std::vector<double> &in_coords, const std::vector<unsigned int> &in_tris){
+    std::vector<std::vector<uint>> poly;
+    for(int i=0; i<in_tris.size(); i+=3){
+        std::vector<uint> p;
+        p.push_back(in_tris[i]);
+        p.push_back(in_tris[i+1]);
+        p.push_back(in_tris[i+2]);
+        poly.emplace_back(p);
+    }
+    cinolib::write_OBJ(fn.c_str(),in_coords,poly);
 }
 
 #include"booleans.h"
