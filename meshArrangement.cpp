@@ -48,7 +48,11 @@
 #define EXPORT_INTERFACE
 #endif
 
-bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,std::vector<uint>& in_tris,std::vector<double>& out_coords,std::vector<uint>& out_tris){
+bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
+    std::vector<uint>& in_tris,
+    std::vector<double>& out_coords,
+    std::vector<uint>& out_tris)
+{
     point_arena arena;
     std::vector<genericPoint*> vertices;
     std::vector< std::bitset<NBIT>> tmp_in_labels(in_tris.size() / 3), out_labels;
@@ -81,3 +85,4 @@ bool EXPORT_INTERFACE solveIntersectTriangles(std::vector<double>& in_coords,
     return b;
 }
 
+#include"booleans.h"
