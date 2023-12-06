@@ -80,7 +80,7 @@ inline void customBooleanPipeline(std::vector<genericPoint*>& arr_verts, std::ve
 // extern int bool_time;
 // extern std::vector<std::string> files;
 
-inline void booleanPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris,
+bool EXPORT_INTERFACE booleanPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris,
                             const std::vector<uint> &in_labels, const BoolOp &op, std::vector<double> &bool_coords,
                             std::vector<uint> &bool_tris, std::vector< std::bitset<NBIT> > &bool_labels)
 {
@@ -95,11 +95,14 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
     std::vector<phmap::flat_hash_set<uint>> patches;
     cinolib::Octree octree; // built with arr_in_tris and arr_in_labels
 
-    customArrangementPipeline(in_coords, in_tris, in_labels, arr_in_tris, arr_in_labels, arena, arr_verts,
+    bool b = customArrangementPipeline(in_coords, in_tris, in_labels, arr_in_tris, arr_in_labels, arena, arr_verts,
                               arr_out_tris, labels, octree, dupl_triangles);
-
+    if(!b){
+        return b;
+    }
     customBooleanPipeline(arr_verts, arr_in_tris, arr_out_tris, arr_in_labels, dupl_triangles, labels,
                           patches, octree, op, bool_coords, bool_tris, bool_labels);
+    return b;
 }
 
 
@@ -107,7 +110,7 @@ inline void booleanPipeline(const std::vector<double> &in_coords, const std::vec
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 /* a custom arrangement pipeline in witch we can expose the octree used to find the starting intersection list */
-inline void customArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector<uint> &in_labels,
+inline bool customArrangementPipeline(const std::vector<double> &in_coords, const std::vector<uint> &in_tris, const std::vector<uint> &in_labels,
                                       std::vector<uint> &arr_in_tris, std::vector< std::bitset<NBIT>> &arr_in_labels,
                                       point_arena& arena, std::vector<genericPoint *> &vertices, std::vector<uint> &arr_out_tris, Labels &labels,
                                       cinolib::Octree &octree, std::vector<DuplTriInfo> &dupl_triangles)
@@ -139,10 +142,14 @@ inline void customArrangementPipeline(const std::vector<double> &in_coords, cons
 
     classifyIntersections(ts, arena, g);
 
-    triangulation(ts, arena, g, arr_out_tris, labels.surface);
+    bool b = triangulation(ts, arena, g, arr_out_tris, labels.surface);
+    if(!b){
+        return b;
+    }
     ts.appendJollyPoints();
 
     labels.inside.resize(arr_out_tris.size() / 3);
+    return b;
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
