@@ -39,7 +39,7 @@
 
 #include <cinolib/octree.h>
 
-extern int vert_offset;
+//extern int vert_offset;
 
 inline void load(const std::string &filename, std::vector<double> &coords, std::vector<uint> &tris)
 {
@@ -77,8 +77,6 @@ inline void loadMultipleFiles(const std::vector<std::string> &files, std::vector
 {
     for(uint f_id = 0; f_id < files.size(); f_id++)
     {
-        vert_offset = coords.size();
-
         std::vector<double> tmp_coords;
         std::vector<uint> tmp_tris;
 
