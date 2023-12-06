@@ -41,7 +41,7 @@
 #define _HAS_STD_BYTE 0
 
 #include "solve_intersections.h"
-#include <cinolib/write_OBJ.h>
+#include <cinolib/io/write_OBJ.h>
 
 #ifdef WIN32
 #define EXPORT_INTERFACE __declspec(dllexport)
