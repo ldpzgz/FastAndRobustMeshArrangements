@@ -80,10 +80,12 @@ inline void splitSingleEdge(const TriangleSoup &ts, FastTrimesh &subm, uint v0_i
 inline void addConstraintSegmentsInSingleTriangle(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, AuxiliaryStructure &g, auxvector<UIPair> &segment_list, tbb::spin_mutex& mutex);
 
 inline void addConstraintSegment(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint v0_id, uint v1_id, const int orientation,
-                                 AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_map< UIPair, UIPair > &sub_segs_map, tbb::spin_mutex& mutex);
+                                 AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_set<UIPair> &pending_segments,
+                                 phmap::flat_hash_map< UIPair, UIPair > &sub_segs_map, tbb::spin_mutex& mutex);
 
 inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint v_start, uint v_stop, auxvector<uint> &intersected_edges, auxvector<uint> &intersected_tris,
-                                     AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_map< UIPair, UIPair > &sub_seg_map, tbb::spin_mutex& mutex);
+                                     AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_set<UIPair> &pending_segments,
+                                     phmap::flat_hash_map< UIPair, UIPair > &sub_seg_map, tbb::spin_mutex& mutex);
 
 template<typename iterator>
 inline void boundaryWalker(const FastTrimesh &subm, uint v_start, uint v_stop, iterator curr_p, iterator curr_e, std::vector<uint> &h);
@@ -108,6 +110,10 @@ inline bool segmentsIntersectInside(const FastTrimesh &subm, uint e00_id, uint e
 inline bool pointInsideSegment(const FastTrimesh &subm, uint ev0_id, uint ev1_id, uint p_id);
 
 inline void splitSegmentInSubSegments(uint v_start, uint v_stop, uint mid_point, phmap::flat_hash_map< UIPair, UIPair > &sub_segments_map);
+
+inline UIPair normalizedSegment(uint v0, uint v1);
+
+inline void pushPendingSegment(auxvector<UIPair> &segment_list, phmap::flat_hash_set<UIPair> &pending_segments, uint v0, uint v1);
 
 inline const auxvector<uint> &segmentTrianglesList(const UIPair &seg, const phmap::flat_hash_map< UIPair, UIPair > &sub_segments_map, const AuxiliaryStructure &g);
 

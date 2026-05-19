@@ -95,6 +95,13 @@ inline FastTrimesh::FastTrimesh(const std::vector<genericPoint *> &in_verts, con
             edges[e_id] = {v0, v1, false};
         }
 
+        edge_map.reserve(sorted_edges.size());
+        for(uint e_id = 0; e_id < sorted_edges.size(); e_id++)
+        {
+            auto [v0, v1] = sorted_edges[e_id];
+            edge_map[std::make_pair(v0, v1)] = e_id;
+        }
+
         // fix adjacencies
         v2e.resize(vertices.size());
         for(uint e_id = 0; e_id < sorted_edges.size(); e_id++)
@@ -130,6 +137,7 @@ inline FastTrimesh::FastTrimesh(const std::vector<genericPoint *> &in_verts, con
     {
         vertices.reserve(in_verts.size());
         edges.reserve(in_verts.size() / 2);
+        edge_map.reserve(in_verts.size());
         triangles.reserve(in_tris.size() / 3);
         v2e.reserve(in_verts.size());
 
@@ -147,6 +155,7 @@ inline void FastTrimesh::preAllocateSpace(uint estimated_num_verts)
     vertices.reserve(estimated_num_verts);
     rev_vtx_map.reserve(estimated_num_verts);
     edges.reserve(estimated_num_verts / 2);
+    edge_map.reserve(estimated_num_verts / 2);
     triangles.reserve(estimated_num_verts / 3);
     v2e.reserve(estimated_num_verts);
 }
@@ -296,10 +305,22 @@ inline int FastTrimesh::edgeID(uint ev0_id, uint ev1_id) const
     assert(ev0_id != ev1_id && "edge with equal endpoints");
     assert((ev0_id < vertices.size() && ev1_id < vertices.size()) && "vtx id out of range");
 
+    auto key = normalizedEdge(ev0_id, ev1_id);
+    auto it = edge_map.find(key);
+    if(it != edge_map.end())
+    {
+        uint e_id = it->second;
+        if(e_id < edges.size() && edgeContainsVert(e_id, ev0_id) && edgeContainsVert(e_id, ev1_id))
+            return static_cast<int>(e_id);
+    }
+
     for(uint e_id : v2e[ev0_id])
     {
         if(edgeContainsVert(e_id, ev0_id) && edgeContainsVert(e_id, ev1_id))
+        {
+            edge_map[key] = e_id;
             return static_cast<int>(e_id);
+        }
     }
 
     return -1;
@@ -817,6 +838,7 @@ inline int FastTrimesh::addEdge(uint ev0_id, uint ev1_id)
     e_id = static_cast<int>(edges.size());
 
     edges.emplace_back(ev0_id, ev1_id, false);
+    edge_map[normalizedEdge(ev0_id, ev1_id)] = static_cast<uint>(e_id);
 
     e2t.emplace_back();
     v2e[ev0_id].push_back(static_cast<uint>(e_id));
@@ -832,6 +854,13 @@ inline bool FastTrimesh::edgeContainsVert(uint e_id, uint v_id) const
     if(edges[e_id].v.first == v_id) return true;
     if(edges[e_id].v.second == v_id) return true;
     return false;
+}
+
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+inline std::pair<uint, uint> FastTrimesh::normalizedEdge(uint ev0_id, uint ev1_id) const
+{
+    return (ev0_id < ev1_id) ? std::make_pair(ev0_id, ev1_id) : std::make_pair(ev1_id, ev0_id);
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

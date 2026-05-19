@@ -44,6 +44,7 @@
 #include <implicit_point.h>
 #include "tree.h"
 #include "common.h"
+#include "utils.h"
 
 #include "../external/parallel-hashmap/parallel_hashmap/phmap.h"
 
@@ -215,6 +216,7 @@ class FastTrimesh
         std::vector< fmvector<uint> >    e2t;
 
         phmap::flat_hash_map <uint, uint> rev_vtx_map;
+        mutable phmap::flat_hash_map<std::pair<uint, uint>, uint> edge_map;
 
         Plane triangle_plane;
 
@@ -222,6 +224,8 @@ class FastTrimesh
         inline int addEdge(uint ev0_id, uint ev1_id);
 
         inline bool edgeContainsVert(uint e_id, uint v_id) const;
+
+        inline std::pair<uint, uint> normalizedEdge(uint ev0_id, uint ev1_id) const;
 
         inline void removeFromVec(fmvector<uint> &vec, uint elem);
 

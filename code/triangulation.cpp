@@ -379,6 +379,11 @@ inline void addConstraintSegmentsInSingleTriangle(TriangleSoup &ts, point_arena&
 {
     int orientation = subm.triOrientation(0);
 
+    phmap::flat_hash_set<UIPair> pending_segments;
+    pending_segments.reserve(2 * segment_list.size());
+    for(UIPair &seg : segment_list)
+        pending_segments.insert(normalizedSegment(seg.first, seg.second));
+
     phmap::flat_hash_map< UIPair, UIPair > sub_segs_map;
     sub_segs_map.reserve(segment_list.size());
 
@@ -386,18 +391,24 @@ inline void addConstraintSegmentsInSingleTriangle(TriangleSoup &ts, point_arena&
     {
         UIPair seg = segment_list.back();
         segment_list.pop_back();
+        UIPair key_seg = normalizedSegment(seg.first, seg.second);
+        auto pending_it = pending_segments.find(key_seg);
+        if(pending_it == pending_segments.end()) continue;
+        pending_segments.erase(pending_it);
+        if(seg.first == seg.second) continue;
 
         uint v0_id = subm.vertNewID(seg.first);
         uint v1_id = subm.vertNewID(seg.second);
 
-        addConstraintSegment(ts, arena, subm, v0_id, v1_id, orientation, g, segment_list, sub_segs_map, mutex);
+        addConstraintSegment(ts, arena, subm, v0_id, v1_id, orientation, g, segment_list, pending_segments, sub_segs_map, mutex);
     }
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 inline void addConstraintSegment(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint v0_id, uint v1_id, const int orientation,
-                          AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_map< UIPair, UIPair > &sub_segs_map, tbb::spin_mutex& mutex)
+                          AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_set<UIPair> &pending_segments,
+                          phmap::flat_hash_map< UIPair, UIPair > &sub_segs_map, tbb::spin_mutex& mutex)
 {
     int e_id = subm.edgeID(v0_id, v1_id);
 
@@ -414,7 +425,7 @@ inline void addConstraintSegment(TriangleSoup &ts, point_arena& arena, FastTrime
     auxvector<uint> intersected_edges;
     auxvector<uint> intersected_tris;
 
-    findIntersectingElements(ts, arena, subm, v_start, v_stop, intersected_edges, intersected_tris, g, segment_list, sub_segs_map, mutex);
+    findIntersectingElements(ts, arena, subm, v_start, v_stop, intersected_edges, intersected_tris, g, segment_list, pending_segments, sub_segs_map, mutex);
 
     if(intersected_edges.size() == 0) return;
 
@@ -444,7 +455,8 @@ inline void addConstraintSegment(TriangleSoup &ts, point_arena& arena, FastTrime
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint v_start, uint v_stop, auxvector<uint> &intersected_edges, auxvector<uint> &intersected_tris,
-                              AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_map< UIPair, UIPair > &sub_seg_map, tbb::spin_mutex& mutex)
+                              AuxiliaryStructure &g, auxvector<UIPair> &segment_list, phmap::flat_hash_set<UIPair> &pending_segments,
+                              phmap::flat_hash_map< UIPair, UIPair > &sub_seg_map, tbb::spin_mutex& mutex)
 {
     uint orig_vstart = subm.vertOrigID(v_start);
     uint orig_vstop  = subm.vertOrigID(v_stop);
@@ -473,7 +485,7 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
 
             subm.setEdgeConstr(static_cast<uint>(edge_id)); // edge marked as constr
 
-            segment_list.push_back(std::make_pair(orig_v0, orig_vstop));
+            pushPendingSegment(segment_list, pending_segments, orig_v0, orig_vstop);
             intersected_edges.clear();
 
             splitSegmentInSubSegments(orig_vstart, orig_vstop, orig_v0, sub_seg_map);
@@ -490,7 +502,7 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
 
             subm.setEdgeConstr(static_cast<uint>(edge_id)); // edge marked as constr
 
-            segment_list.push_back(std::make_pair(orig_v1, orig_vstop));
+            pushPendingSegment(segment_list, pending_segments, orig_v1, orig_vstop);
             intersected_edges.clear();
 
             splitSegmentInSubSegments(orig_vstart, orig_vstop, orig_v1, sub_seg_map);
@@ -537,8 +549,8 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
                 // the original edge (v_start, v_stop) is split in (v_start-v2) - (v2-v_stop) and put in the segment_list to check later
                 uint orig_v2 = subm.vertOrigID(v2);
 
-                segment_list.push_back(std::make_pair(orig_vstart, orig_v2));
-                segment_list.push_back(std::make_pair(orig_v2, orig_vstop));
+                pushPendingSegment(segment_list, pending_segments, orig_vstart, orig_v2);
+                pushPendingSegment(segment_list, pending_segments, orig_v2, orig_vstop);
                 intersected_edges.clear();
 
                 splitSegmentInSubSegments(orig_vstart, orig_vstop, orig_v2, sub_seg_map);
@@ -578,8 +590,8 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
             subm.setEdgeConstr(static_cast<uint>(edge1_id));
 
             // the original edge (v_start, v_stop) is split in (v_start-tpi) - (tpi-v_stop) and put in the segment_list to check later
-            segment_list.push_back(std::make_pair(orig_vstart, orig_tpi_id));
-            segment_list.push_back(std::make_pair(orig_tpi_id, orig_vstop));
+            pushPendingSegment(segment_list, pending_segments, orig_vstart, orig_tpi_id);
+            pushPendingSegment(segment_list, pending_segments, orig_tpi_id, orig_vstop);
             intersected_edges.clear();
 
             splitSegmentInSubSegments(orig_vstart, orig_vstop, orig_tpi_id, sub_seg_map);
@@ -1002,10 +1014,9 @@ inline bool pointInsideSegment(const FastTrimesh &subm, uint ev0_id, uint ev1_id
 
 inline void splitSegmentInSubSegments(uint v_start, uint v_stop, uint mid_point, phmap::flat_hash_map< UIPair, UIPair > &sub_segments_map)
 {
-    UIPair orig_seg, sub_seg0, sub_seg1;
-    (v_start < v_stop) ? orig_seg = std::make_pair(v_start, v_stop) : orig_seg = std::make_pair(v_stop, v_start);
-    (v_start < mid_point) ? sub_seg0 = std::make_pair(v_start, mid_point) : sub_seg0 = std::make_pair(mid_point, v_start);
-    (v_stop < mid_point) ? sub_seg1 = std::make_pair(v_stop, mid_point) : sub_seg1 = std::make_pair(mid_point, v_stop);
+    UIPair orig_seg = normalizedSegment(v_start, v_stop);
+    UIPair sub_seg0 = normalizedSegment(v_start, mid_point);
+    UIPair sub_seg1 = normalizedSegment(v_stop, mid_point);
 
     auto it = sub_segments_map.find(orig_seg);
 
@@ -1024,10 +1035,27 @@ inline void splitSegmentInSubSegments(uint v_start, uint v_stop, uint mid_point,
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+inline UIPair normalizedSegment(uint v0, uint v1)
+{
+    return (v0 < v1) ? std::make_pair(v0, v1) : std::make_pair(v1, v0);
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+inline void pushPendingSegment(auxvector<UIPair> &segment_list, phmap::flat_hash_set<UIPair> &pending_segments, uint v0, uint v1)
+{
+    if(v0 == v1) return;
+
+    UIPair key_seg = normalizedSegment(v0, v1);
+    if(pending_segments.insert(key_seg).second)
+        segment_list.push_back(std::make_pair(v0, v1));
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 inline const auxvector<uint> &segmentTrianglesList(const UIPair &seg, const phmap::flat_hash_map< UIPair, UIPair > &sub_segments_map, const AuxiliaryStructure &g)
 {
-    UIPair key_seg;
-    (seg.first < seg.second) ? key_seg = seg : key_seg = std::make_pair(seg.second, seg.first);
+    UIPair key_seg = normalizedSegment(seg.first, seg.second);
 
     auto it = sub_segments_map.find(key_seg);
 
