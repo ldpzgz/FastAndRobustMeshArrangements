@@ -48,6 +48,7 @@
 
 #include <tbb/tbb.h>
 #include <exception>
+#include <stdexcept>
 inline void triangulateSingleTriangle(TriangleSoup &ts, point_arena& arena, FastTrimesh &subm, uint t_id, AuxiliaryStructure &g, std::vector<uint> &new_tris, std::vector< std::bitset<NBIT> > &new_labels, tbb::spin_mutex& mutex)
 {
     /*:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -162,7 +163,11 @@ inline bool triangulation(TriangleSoup &ts, point_arena& arena, AuxiliaryStructu
 
             triangulateSingleTriangle(ts, arena, subm, t_id, g, new_tris, new_labels, mutex);
         });
-    }catch(std::exception e){
+    } catch(const std::exception& e) {
+        std::cerr << "triangulation failed: " << e.what() << std::endl;
+        return false;
+    } catch(...) {
+        std::cerr << "triangulation failed: unknown exception" << std::endl;
         return false;
     }
     return true;
@@ -494,9 +499,7 @@ inline void findIntersectingElements(TriangleSoup &ts, point_arena& arena, FastT
         }
     }
 
-    if(intersected_edges.empty()){
-        throw std::exception();
-    }
+    if(intersected_edges.empty()) throw std::runtime_error("findIntersectingElements: no first intersecting edge");
 
     // walk along the topology to find the sorted list of edges and tris that intersect {v_start, v_stop}
     while(true)
@@ -960,6 +963,20 @@ inline bool fastPointOnLine(const FastTrimesh &subm, uint e_id, uint p_id)
         case YZ: return (genericPoint::orient2Dyz(*subm.vert(ev0_id), *subm.vert(ev1_id), *subm.vert(p_id)) == 0);
         case ZX: return (genericPoint::orient2Dzx(*subm.vert(ev0_id), *subm.vert(ev1_id), *subm.vert(p_id)) == 0);
     }
+    return false;
+}
+
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+inline int refPlaneToNormalComponent(const Plane &ref_p)
+{
+    switch(ref_p)
+    {
+        case XY: return 2;
+        case YZ: return 0;
+        case ZX: return 1;
+    }
+    return 2;
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -969,14 +986,16 @@ inline bool fastPointOnLine(const FastTrimesh &subm, uint e_id, uint p_id)
 inline bool segmentsIntersectInside(const FastTrimesh &subm, uint e00_id, uint e01_id, uint e10_id, uint e11_id)
 {
     return genericPoint::innerSegmentsCross(*subm.vert(e00_id), *subm.vert(e01_id),
-                                              *subm.vert(e10_id), *subm.vert(e11_id));
+                                              *subm.vert(e10_id), *subm.vert(e11_id),
+                                              refPlaneToNormalComponent(subm.refPlane()));
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 inline bool pointInsideSegment(const FastTrimesh &subm, uint ev0_id, uint ev1_id, uint p_id)
 {
-    return genericPoint::pointInInnerSegment(*subm.vert(p_id), *subm.vert(ev0_id), *subm.vert(ev1_id));
+    return genericPoint::pointInInnerSegment(*subm.vert(p_id), *subm.vert(ev0_id), *subm.vert(ev1_id),
+                                             refPlaneToNormalComponent(subm.refPlane()));
 }
 
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

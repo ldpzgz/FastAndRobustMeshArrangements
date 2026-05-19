@@ -55,7 +55,7 @@ inline double computeMultiplier(const std::vector<double> &coords)
 
     //closest power of 2
     int e = static_cast<int>(std::round(std::log2(div)));
-    double multiplier = (e >= 0) ? static_cast<double>(1 << e) : (1.0 / (1 << (-1 * e)));
+    double multiplier = std::ldexp(1.0, e);
     
     if(multiplier < 0) multiplier = 1.0; // temporary fix
     return multiplier;

@@ -49,15 +49,10 @@
 
 int main(int argc, char **argv)
 {
-    std::string filename = "crash.obj";
+    std::string filename = "error.obj";
 
-    /*if(argc > 1)
+    if(argc > 1)
         filename = argv[1];
-    else
-    {
-        std::cout << "input file missing" << std::endl;
-        return -1;
-    }*/
     //solveIntersection
     /*std::vector<double> in_coords{0,0,0,
         2,0,0,
